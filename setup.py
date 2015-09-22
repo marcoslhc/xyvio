@@ -24,7 +24,7 @@ test_requirements = [
 
 setup(
     name='xyvio',
-    version='0.1.0',
+    version='0.1.1',
     description="Basic Url Shortener",
     long_description=readme + '\n\n' + history,
     author="Marcos Hernández",
