@@ -1,0 +1,26 @@
+[DEFAULT]
+root =
+bin =
+
+; uwsgi uses the magic vars in their config
+; other sections use the regular $()s vars
+[uwsgi]
+socket = %(root)s/uwsgi.sock
+master = 1
+workers = 1
+max-requests = 1000
+harakiri = 60
+daemonize = %d/uwsgi.log
+pidfile = %d/uwsgi.pid
+vacuum = 1
+python-path = %d/bin/python
+wsgi=wsgi:app
+buffer-size=32768
+
+[xyvio]
+project = %(root)s/xyvio
+application = %(project)s/xyvio
+
+[redis]
+host =
+port =
