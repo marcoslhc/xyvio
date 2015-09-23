@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
-from settings import config
+import sys
+import uwsgi
+
+
+sys.path = [uwsgi.opt['application'],
+            uwsgi.opt['project'],
+            uwsgi.opt['bin'],
+            ] + sys.path
+
 from xyvio import create_app
 
 
-
 app_config = {
-    'redis_host': config.get('redis', 'host'),
-    'redis_port': config.get('redis', 'port')
+    'redis_host': uwsgi.opt['redis_host'],
+    'redis_port': uwsgi.opt['redis_port']
 }
 
 app = create_app(**app_config)
