@@ -1,6 +1,7 @@
 *.ini
 *.py[cod]
-
+xivyo/static/bower_components
+xivyo/static/node_modules
 # C extensions
 *.so
 

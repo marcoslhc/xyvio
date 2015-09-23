@@ -1,0 +1,15 @@
+{
+  "name": "xyvio_static",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marcos Hernández <marcoslhc@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "gulp-boilerplate": "git+ssh://git@github.com/gulp-boilerplate/gulp-boilerplate.git",
+    "gulp-boilerplate-css": "git+ssh://git@github.com/gulp-boilerplate/gulp-boilerplate-css.git"
+  }
+}

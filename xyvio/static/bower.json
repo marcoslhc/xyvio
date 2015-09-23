@@ -1,0 +1,15 @@
+{
+  "name": "xyvio_static",
+  "version": "0.1.3",
+  "authors": [
+    "Marcos Hernández <marcoslhc@gmail.com>"
+  ],
+  "license": "ISC",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
