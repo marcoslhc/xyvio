@@ -14,7 +14,7 @@ class TestDataStore(DataStore):
     def get(self, key):
         try:
             value = self.__get(key)
-        except (IndexError, ValueError) as e:
+        except (IndexError, ValueError):
             value = [None]
         return value[0]
 
@@ -26,6 +26,6 @@ class TestDataStore(DataStore):
         try:
             val, idx = self.__get(key)
             self.store[idx] = key, val + 1
-        except (IndexError, ValueError) as e:
+        except (IndexError, ValueError):
             self.set(key, 1)
         return self.get(key)
