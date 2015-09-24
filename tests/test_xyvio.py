@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
+
+sys.path = [
+    '/Users/marcoslh/Documents/xyvio',
+    '/Users/marcoslh/Documents/xyvio/xyvio'
+] + sys.path
+
 from werkzeug.test import Client
-from xyvio.xivyo import app
+from xyvio.xyvio import app
 from werkzeug.wrappers import BaseResponse
 """
-test_xyvio
-----------------------------------
-
 Tests for `xyvio` module.
 """
 

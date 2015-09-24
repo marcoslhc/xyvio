@@ -124,6 +124,8 @@ config = {
     'redis_port': os.environ.get('XYVIO_REDIS_PORT') or '6379'
 }
 
+app = create_app(**config)
+
 if __name__ == '__main__':
     from werkzeug.serving import run_simple
     app = create_app(**config)
