@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
-import redis
 import urlparse
+from .datastore import RedisDataStore
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.exceptions import HTTPException, NotFound
@@ -12,8 +12,10 @@ from jinja2 import Environment, FileSystemLoader
 
 class Shortly(object):
 
-    def __init__(self, config):
-        self.redis = redis.Redis(config['redis_host'], config['redis_port'])
+    def __init__(self, config=None, dataStore=None):
+        if dataStore is None:
+            raise Exception('No data store defined')
+        self.dataStore = dataStore
         template_path = os.path.join(os.path.dirname(__file__), 'templates')
         self.jinja_env = Environment(loader=FileSystemLoader(template_path),
                                      autoescape=True)
@@ -28,8 +30,8 @@ class Shortly(object):
         try:
             endpoint, values = adapter.match()
             return getattr(self, 'on_' + endpoint)(request, **values)
-        except Exception, e:
-            return HTTPException(e)
+        except HTTPException, e:
+            return e
 
     def wsgi_app(self, environ, start_response):
         request = Request(environ)
@@ -56,30 +58,30 @@ class Shortly(object):
         return self.render_template('new_url.html', error=error, url=url)
 
     def insert_url(self, url, custom_id=None):
-        short_id = self.redis.get('reverse-url:' + url)
+        short_id = self.dataStore.get('reverse-url:' + url)
         if custom_id is None and short_id is not None:
             return short_id
         elif custom_id is None:
-            url_num = self.redis.incr('last-url-id')
+            url_num = self.dataStore.incr('last-url-id')
             short_id = base36_encode(url_num)
         else:
             short_id = custom_id
-        self.redis.set('url-target:' + short_id, url)
-        self.redis.set('reverse-url:' + url, short_id)
+        self.dataStore.set('url-target:' + short_id, url)
+        self.dataStore.set('reverse-url:' + url, short_id)
         return short_id
 
     def on_follow_short_link(self, request, short_id):
-        link_target = self.redis.get('url-target:' + short_id)
+        link_target = self.dataStore.get('url-target:' + short_id)
         if link_target is None:
             raise NotFound()
-        self.redis.incr('click-count:' + short_id)
+        self.dataStore.incr('click-count:' + short_id)
         return redirect(link_target)
 
     def on_short_link_details(self, request, short_id):
-        link_target = self.redis.get('url-target:' + short_id)
+        link_target = self.dataStore.get('url-target:' + short_id)
         if link_target is None:
             raise NotFound()
-        click_count = int(self.redis.get('click-count:' + short_id) or 0)
+        click_count = int(self.dataStore.get('click-count:' + short_id) or 0)
         return self.render_template('short_link_details.html',
                                     link_target=link_target,
                                     short_id=short_id,
@@ -107,11 +109,9 @@ def base36_encode(number):
 
 
 def create_app(redis_host='', redis_port=0, with_static=True):
-    print('%s:%s' % (redis_host, redis_port))
-    app = Shortly({
-        'redis_host': redis_host,
-        'redis_port': redis_port
-    })
+    redisDataStore = RedisDataStore(redis_host=redis_host,
+                                    redis_port=redis_port)
+    app = Shortly(dataStore=redisDataStore)
     if with_static:
         app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
             '/static':  os.path.join(os.path.dirname(__file__), 'static')
@@ -120,8 +120,8 @@ def create_app(redis_host='', redis_port=0, with_static=True):
 
 
 config = {
-    'redis_host': os.environ.get('XYVIO_REDIS_HOST') or 'localhost',
-    'redis_port': os.environ.get('XYVIO_REDIS_PORT') or '6379'
+    'redis_host': os.environ.get('XYVIO_REDIS_HOST') or 'redis.xiryvella.net',
+    'redis_port': os.environ.get('XYVIO_REDIS_PORT') or 12783
 }
 
 app = create_app(**config)
