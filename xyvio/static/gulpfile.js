@@ -2,8 +2,8 @@ var gulpTasks = require('gulp-boilerplate');
 var tasks = {
     'css': {
         def: 'gulp-boilerplate-css',
-        src: ['./less'],
-        dest: 'dist/css/main.css'
+        src: ['./less/**/*.less'],
+        dest: './dist/css'
     },
     'clean': {
         def: 'gulp-boilerplate-clean',
@@ -12,3 +12,5 @@ var tasks = {
 };
 
 var gulp = gulpTasks(tasks);
+
+gulp.task('dist', ['clean', 'css']);

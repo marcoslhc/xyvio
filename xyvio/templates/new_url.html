@@ -4,11 +4,20 @@
   <h2>Submit URL</h2>
   <form action="" method=post>
     {% if error %}
-      <p class=error><strong>Error:</strong> {{ error }}
+      <p class=error><strong>Error:</strong> {{ error }}</p>
     {% endif %}
-    <p>URL:
-      <input type=text name=url value="{{ url }}" class=urlinput>
-      <input type=text name=custom_id value="{{ custom_id }}" class=customidinput>
-      <input type=submit value="Shorten">
+        <div class="controls">
+            <div class="control">
+                <label for=url>URL</label>
+                <input type=text name=url value="{{ url }}" class=urlinput>
+            </div>
+            <div class="control">
+                <label for=custom_id>Custom Slug</label>
+                <input type=text name=custom_id value="{{ custom_id }}" class=customidinput>
+            </div>
+            <div class="control">
+                <input type=submit value="Shorten">
+            </div>
+        </div>
   </form>
 {% endblock %}

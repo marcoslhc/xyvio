@@ -1,0 +1,56 @@
+@import url(https://fonts.googleapis.com/css?family=Lato:400,700,700italic,400italic|PT+Serif:400,400italic,700,700italic);
+@import 'bower_components/normalize-less/normalize.less';
+
+@black          : rgb(22,22,22);
+@darkest-grey   : lighten(@black, 10%);
+@darker-grey    : lighten(@black, 20%);
+@dark-grey      : lighten(@black, 30%);
+@light-grey     : lighten(@black, 50%);
+@lighter-grey   : lighten(@black, 80%);
+@lightest-grey  : lighten(@black, 90%);
+@white          : lighten(@black, 100%);
+
+
+@darker-red     : darken(@red, 25);
+@red            : rgb(255, 75, 75);
+@lighter-red    : lighten(@red, 7);
+
+@toasted-yellow : rgb(200, 150, 050);
+@yellow         : rgb(250, 200, 000);
+@aged-yellow    : rgb(255, 225, 100);
+
+@beach-blue     : darken(@turquoise, 20%);
+@turquoise      : rgb(050, 200, 225);
+@summer-blue    : lighten(@turquoise, 20%);
+
+
+body {
+    background-color: @lightest-grey;
+    color: @black;
+    margin: 1.6em 1.2em;
+    font-family: 'PT Serif';
+    font-size: 1rem;
+}
+
+.control {
+    margin: 1.4em 0 0.6em;
+    font-family: 'Lato';
+    font-size: 1.1em;
+    label {
+        display: inline-block;
+        width: 120px;
+        color: @beach-blue
+    }
+
+    input {
+        border-radius: 0.2em;
+
+        &[type=text] {
+            background-color: @white;
+            color: @darker-grey;
+            background-color: #fff;
+            border: solid rgba(0,0,0,0.3) 1px;
+            box-shadow: inset 0px 2px 2px 1px rgba(0,0,0,0.1);
+        }
+    }
+}
