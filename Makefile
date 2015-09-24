@@ -1,4 +1,4 @@
-.PHONY: clean-pyc clean-build docs clean
+.PHONY: clean-pyc clean-build docs clean static static_clean
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
 try:
@@ -10,6 +10,7 @@ webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
 endef
 export BROWSER_PYSCRIPT
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
+STATIC_DIR := ./xyvio/static
 
 help:
 	@echo "clean - remove all build, test, coverage and Python artifacts"
@@ -76,6 +77,18 @@ dist: clean
 	python setup.py sdist
 	python setup.py bdist_wheel
 	ls -l dist
+
+static: static_clean
+	cd $(STATIC_DIR); \
+	npm install && \
+	bower install && \
+	gulp dist
+
+static_clean:
+	cd $(STATIC_DIR); \
+	rm -rf dist \
+			node_modules \
+			bower_components
 
 install: clean
 	python setup.py install
