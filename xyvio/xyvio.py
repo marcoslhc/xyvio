@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import urlparse
-from .datastore import RedisDataStore
+from datastore import RedisDataStore
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.exceptions import HTTPException, NotFound
@@ -61,7 +61,7 @@ class Shortly(object):
         short_id = self.dataStore.get('reverse-url:' + url)
         if custom_id is None and short_id is not None:
             return short_id
-        elif custom_id is None:
+        elif custom_id is None or custom_id == '':
             url_num = self.dataStore.incr('last-url-id')
             short_id = base36_encode(url_num)
         else:
