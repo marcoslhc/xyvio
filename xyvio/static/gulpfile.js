@@ -2,7 +2,7 @@ var gulpTasks = require('gulp-boilerplate');
 var tasks = {
     'css': {
         def: 'gulp-boilerplate-css',
-        src: ['./less/**/*.less'],
+        src: ['./sass/**/*.scss'],
         dest: './dist/css'
     },
     'clean': {

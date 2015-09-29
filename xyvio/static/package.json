@@ -12,6 +12,6 @@
     "gulp": "^3.9.0",
     "gulp-boilerplate": "git+ssh://git@github.com/gulp-boilerplate/gulp-boilerplate.git",
     "gulp-boilerplate-clean": "git+ssh://git@github.com/gulp-boilerplate/gulp-boilerplate-clean.git",
-    "gulp-boilerplate-css": "git+ssh://git@github.com/gulp-boilerplate/gulp-boilerplate-css.git#0.1.2"
+    "gulp-boilerplate-css": "git+ssh://git@github.com/gulp-boilerplate/gulp-boilerplate-css.git"
   }
 }
