@@ -13,6 +13,6 @@
     "tests"
   ],
   "dependencies": {
-    "normalize-less": "*"
+    "normalize-less": "*",
   }
 }
