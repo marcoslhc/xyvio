@@ -1,47 +1,28 @@
 # -*- coding: utf-8 -*-
 import os
 import urlparse
-from datastore import RedisDataStore
-from werkzeug.wrappers import Request, Response
+from datastore import RedisDataStore, DataManager
+from controller import Controller, APIController, TemplateController
 from werkzeug.routing import Map, Rule
-from werkzeug.exceptions import HTTPException, NotFound
+from werkzeug.exceptions import NotFound
 from werkzeug.wsgi import SharedDataMiddleware
 from werkzeug.utils import redirect
 from jinja2 import Environment, FileSystemLoader
 
 
-class Shortly(object):
+class Shortly(TemplateController, DataManager):
 
     def __init__(self, config=None, dataStore=None):
-        if dataStore is None:
-            raise Exception('No data store defined')
-        self.dataStore = dataStore
+        super(Shortly, self).__init__(dataStore=dataStore)
         template_path = os.path.join(os.path.dirname(__file__), 'templates')
         self.jinja_env = Environment(loader=FileSystemLoader(template_path),
                                      autoescape=True)
         self.url_map = Map([
-            Rule('/', endpoint='new_url'),
-            Rule('/<short_id>', endpoint='follow_short_link'),
-            Rule('/<short_id>+', endpoint='short_link_details'),
-            Rule('/list', endpoint='list_urls')
+            Rule('/', endpoint='on_new_url'),
+            Rule('/<short_id>', endpoint='on_follow_short_link'),
+            Rule('/<short_id>+', endpoint='on_short_link_details'),
+            Rule('/list', endpoint='on_list_urls')
         ])
-
-    def dispatch_request(self, request):
-        adapter = self.url_map.bind_to_environ(request.environ)
-        try:
-            endpoint, values = adapter.match()
-            return getattr(self, 'on_' + endpoint)(request, **values)
-        except HTTPException, e:
-            return e
-
-    def wsgi_app(self, environ, start_response):
-        request = Request(environ)
-        response = self.dispatch_request(request)
-        return response(environ, start_response)
-
-    def render_template(self, template_name, **context):
-        t = self.jinja_env.get_template(template_name)
-        return Response(t.render(context), mimetype='text/html')
 
     def on_new_url(self, request):
         error = None
@@ -95,14 +76,34 @@ class Shortly(object):
         for key in urlkeys:
             urls.append({
                 'short_url': 'http://{0}/{1}'.format(request.host,
-                                              key.split(':')[1]),
+                                                     key.split(':')[1]),
                 'target': self.dataStore.get(key),
             })
-        print(urls)
         return self.render_template('url_list.html', urls=urls)
 
-    def __call__(self, environ, start_response):
-        return self.wsgi_app(environ, start_response)
+
+class ShortlyAPI(APIController, DataManager):
+
+    def __init__(self, config=None, dataStore=None):
+        super(ShortlyAPI, self).__init__(dataStore=dataStore)
+
+        self.url_map = Map([
+            Rule('/', endpoint='new_url'),
+            Rule('/<short_id>', endpoint='follow_short_link'),
+            Rule('/<short_id>+', endpoint='short_link_details'),
+            Rule('/list', endpoint='list_urls')
+        ])
+
+    def list_urls(self, request):
+        urls = []
+        urlkeys = self.dataStore.keys('url-target:*')
+        for key in urlkeys:
+            urls.append({
+                'short_url': 'http://{0}/{1}'.format(request.host,
+                                                     key.split(':')[1]),
+                'target': self.dataStore.get(key),
+            })
+        return self.render(urls=urls)
 
 
 def is_valid_url(url):
@@ -124,7 +125,7 @@ def base36_encode(number):
 def create_app(redis_host='', redis_port=0, with_static=True):
     redisDataStore = RedisDataStore(redis_host=redis_host,
                                     redis_port=redis_port)
-    app = Shortly(dataStore=redisDataStore)
+    app = ShortlyAPI(dataStore=redisDataStore)
     if with_static:
         app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
             '/static':  os.path.join(os.path.dirname(__file__), 'static')

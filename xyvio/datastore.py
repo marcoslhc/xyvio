@@ -23,3 +23,11 @@ class RedisDataStore(DataStore):
 
     def keys(self, pattern):
         return self.store.keys(pattern)
+
+
+class DataManager(object):
+
+    def __init__(self, dataStore=None):
+        if dataStore is None:
+            raise Exception('No data store defined')
+        self.dataStore = dataStore
