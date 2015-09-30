@@ -1,14 +1,64 @@
+@charset 'utf-8';
 @import url(https://fonts.googleapis.com/css?family=Lato:400,700,700italic,400italic|PT+Serif:400,400italic,700,700italic);
-@import 'bower_components/normalize-less/normalize.less';
 
+@import 'bower_components/normalize-less/normalize.less';
+/*doc
+---
+title: Colors
+name: colors
+category: basics
+---
+```html_example
+    <div class='color-black'  >black</div>
+    <div class='color-darkest-grey' >darkest-grey</div>
+    <div class='color-darker-grey'>darker-grey</div>
+    <div class='color-dark-grey'>dark-grey</div>
+    <div class='color-light-grey'>light-grey</div>
+    <div class='color-lighter-grey' >lighter-grey</div>
+    <div class='color-lightest-grey'>lightest-grey</div>
+    <div class='color-white' >white</div>
+```
+*/
 $black          : rgb(22,22,22);
+.color-black {
+    background-color: $black;
+    color: white;
+}
 $darkest-grey   : lighten($black, 10%);
+.color-darkest-grey {
+    background-color: $darkest-grey;
+    color: white;
+}
 $darker-grey    : lighten($black, 20%);
+.color-darker-grey {
+    background-color: $darker-grey;
+    color: white;
+}
 $dark-grey      : lighten($black, 30%);
+.color-dark-grey {
+    background-color: $dark-grey;
+    color: white;
+}
 $light-grey     : lighten($black, 50%);
+.color-light-grey {
+    background-color: $light-grey;
+    color: white;
+}
 $lighter-grey   : lighten($black, 80%);
+.color-lighter-grey {
+    background-color: $lighter-grey;
+    color: $black;
+}
 $lightest-grey  : lighten($black, 90%);
+.color-lightest-grey {
+    background-color: $lightest-grey;
+    color: $black;
+}
 $white          : lighten($black, 100%);
+.color-white {
+    background-color: $white;
+    color: $black;
+}
 
 
 $red            : rgb(255, 75, 75);
