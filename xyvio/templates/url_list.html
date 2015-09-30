@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Create New Short URL{% endblock %}
+{% block body %}
+{% if urls %}
+    <table>
+        <tr>
+            <th>Short Url</th>
+            <th colspan="2">Target</th>
+        </tr>
+            {% for url in urls %}
+            <tr>
+                <td><a href="{{url.short_url}}+">{{url.short_url}}</a></td>
+                <td><a href="{{url.short_url}}">{{url.target}}</a></td>
+                <td><a href="{{url.target}}">Direct link</a></td>
+            </tr>
+            {% endfor %}
+    </table>
+{% else %}
+    <p>No url found</p>
+{% endif %}
+{% endblock %}
