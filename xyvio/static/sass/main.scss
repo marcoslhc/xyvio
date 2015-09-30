@@ -23,6 +23,36 @@ $turquoise      : rgb(050, 200, 225);
 $beach-blue     : darken($turquoise, 20%);
 $summer-blue    : lighten($turquoise, 20%);
 
+table {
+    margin: 0.5em 1.6em;
+    padding: 0.8em;
+    font-family: 'Lato';
+    background-color: $lighter-grey;
+    th:first-child {
+        border-top-left-radius: 0.4em;
+    }
+    th:last-child {
+        border-top-right-radius: 0.4em;
+    }
+    tr:last-child td:first-child {
+        border-bottom-left-radius: 0.4em;
+    }
+    tr:last-child td:last-child {
+        border-bottom-right-radius: 0.4em;
+    }
+    tbody tr {
+        &:nth-child(odd) {
+            background-color: $summer-blue;
+        }
+    }
+    td, th {
+        margin: 0.5em 1.6em;
+        padding: 0.8em;
+    }
+    th {
+        background-color: $turquoise;
+    }
+}
 
 body {
     background-color: $lightest-grey;

@@ -3,7 +3,7 @@ var tasks = {
     'css': {
         def: 'gulp-boilerplate-css',
         src: ['./sass/**/*.scss'],
-        dest: './dist/css'
+        dest: './dist/css/'
     },
     'clean': {
         def: 'gulp-boilerplate-clean',
