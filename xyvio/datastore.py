@@ -20,3 +20,6 @@ class RedisDataStore(DataStore):
 
     def set(self, key, value):
         return self.store.set(key, value)
+
+    def keys(self, pattern):
+        return self.store.keys(pattern)

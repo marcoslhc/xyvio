@@ -22,7 +22,8 @@ class Shortly(object):
         self.url_map = Map([
             Rule('/', endpoint='new_url'),
             Rule('/<short_id>', endpoint='follow_short_link'),
-            Rule('/<short_id>+', endpoint='short_link_details')
+            Rule('/<short_id>+', endpoint='short_link_details'),
+            Rule('/list', endpoint='list_urls')
         ])
 
     def dispatch_request(self, request):
@@ -87,6 +88,18 @@ class Shortly(object):
                                     short_id=short_id,
                                     click_count=click_count
                                     )
+
+    def on_list_urls(self, request):
+        urls = []
+        urlkeys = self.dataStore.keys('url-target:*')
+        for key in urlkeys:
+            urls.append({
+                'short_url': 'http://{0}/{1}'.format(request.host,
+                                              key.split(':')[1]),
+                'target': self.dataStore.get(key),
+            })
+        print(urls)
+        return self.render_template('url_list.html', urls=urls)
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
