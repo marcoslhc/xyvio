@@ -1,7 +1,7 @@
+**/bower_components
 *.ini
 *.py[cod]
-xyvio/static/bower_components
-xyvio/static/node_modules
+**/node_modules
 # C extensions
 *.so
 
