@@ -1,47 +1,36 @@
 # -*- coding: utf-8 -*-
 import os
 import urlparse
-from datastore import RedisDataStore
-from werkzeug.wrappers import Request, Response
+from datastore import RedisDataStore, DataManager
+from controller import APIController, TemplateController
 from werkzeug.routing import Map, Rule
-from werkzeug.exceptions import HTTPException, NotFound
+from werkzeug.exceptions import NotFound
 from werkzeug.wsgi import SharedDataMiddleware
 from werkzeug.utils import redirect
 from jinja2 import Environment, FileSystemLoader
 
 
-class Shortly(object):
+class Shortly(TemplateController, DataManager):
 
     def __init__(self, config=None, dataStore=None):
-        if dataStore is None:
-            raise Exception('No data store defined')
-        self.dataStore = dataStore
+        super(Shortly, self).__init__(dataStore=dataStore)
         template_path = os.path.join(os.path.dirname(__file__), 'templates')
         self.jinja_env = Environment(loader=FileSystemLoader(template_path),
                                      autoescape=True)
         self.url_map = Map([
-            Rule('/', endpoint='new_url'),
-            Rule('/<short_id>', endpoint='follow_short_link'),
-            Rule('/<short_id>+', endpoint='short_link_details'),
-            Rule('/list', endpoint='list_urls')
+            Rule('/',
+                 endpoint='on_new_url',
+                 methods=['GET', 'POST']),
+            Rule('/<short_id>',
+                 endpoint='on_follow_short_link',
+                 methods=['GET']),
+            Rule('/<short_id>+',
+                 endpoint='on_short_link_details',
+                 methods=['GET', 'POST']),
+            Rule('/list',
+                 endpoint='on_list_urls',
+                 methods=['GET'])
         ])
-
-    def dispatch_request(self, request):
-        adapter = self.url_map.bind_to_environ(request.environ)
-        try:
-            endpoint, values = adapter.match()
-            return getattr(self, 'on_' + endpoint)(request, **values)
-        except HTTPException, e:
-            return e
-
-    def wsgi_app(self, environ, start_response):
-        request = Request(environ)
-        response = self.dispatch_request(request)
-        return response(environ, start_response)
-
-    def render_template(self, template_name, **context):
-        t = self.jinja_env.get_template(template_name)
-        return Response(t.render(context), mimetype='text/html')
 
     def on_new_url(self, request):
         error = None
@@ -59,7 +48,7 @@ class Shortly(object):
         return self.render_template('new_url.html', error=error, url=url)
 
     def insert_url(self, url, custom_id=None):
-        short_id = self.dataStore.get('reverse-url:' + url)
+        short_id = self.dataStore.get("reverse-url:{0}".format(url))
         if custom_id is None and short_id is not None:
             return short_id
         elif custom_id is None or custom_id == '':
@@ -67,27 +56,75 @@ class Shortly(object):
             short_id = base36_encode(url_num)
         else:
             short_id = custom_id
-        self.dataStore.set('url-target:' + short_id, url)
-        self.dataStore.set('reverse-url:' + url, short_id)
+        self.dataStore.set("url-target:{0}".format(short_id), url)
+        self.dataStore.set("reverse-url:{0}".format(url), short_id)
         return short_id
 
     def on_follow_short_link(self, request, short_id):
-        link_target = self.dataStore.get('url-target:' + short_id)
+        link_target = self.dataStore.get("url-target:{0}".format(short_id))
+
         if link_target is None:
             raise NotFound()
-        self.dataStore.incr('click-count:' + short_id)
+
+        self.dataStore.incr("click-count:{0}".format(short_id))
+
         return redirect(link_target)
 
     def on_short_link_details(self, request, short_id):
-        link_target = self.dataStore.get('url-target:' + short_id)
+        print(request.method)
+        if request.method == 'POST':
+            url = {
+                'short_id': short_id,
+                'url': request.form['url'],
+                'custom_id': request.form['custom_id']
+            }
+            new_url = self.edit_url(**url)
+            short_id = new_url['short_id']
+
+        link_target = self.dataStore.get("url-target:{0}".format(short_id))
+
         if link_target is None:
             raise NotFound()
-        click_count = int(self.dataStore.get('click-count:' + short_id) or 0)
+
+        click_count = int(self.dataStore.get("click-count:{0}".format(short_id)
+                                             ) or 0)
         return self.render_template('short_link_details.html',
                                     link_target=link_target,
                                     short_id=short_id,
                                     click_count=click_count
                                     )
+
+    def edit_url(self, short_id=None, url='', custom_id=None):
+        if short_id is None:
+            raise Exception("Can't work like this anymore")
+
+        old_url = self.dataStore.get("url-target:{0}".format(short_id))
+        is_empty_custom_id = custom_id is None or custom_id == u''
+        is_new_custom_id = not is_empty_custom_id and short_id != custom_id
+
+        if is_new_custom_id:
+            self.dataStore.delete("url-target:{0}".format(short_id))
+            self.dataStore.set("url-target:{0}".format(custom_id), old_url)
+            self.dataStore.set("reverse-url:{0}".format(old_url), custom_id)
+
+        current_id = self.dataStore.get("reverse-url:{0}".format(old_url))
+        is_new_url = (url is not None) and (url is not u'')
+
+        if is_new_url:
+            self.dataStore.delete("reverse-url:{0}".format(old_url))
+            self.dataStore.set("url-target:{0}".format(current_id), url)
+            self.dataStore.set("reverse-url:{0}".format(url), current_id)
+
+        url_key = "url-target:{0}".format(current_id)
+        new_url = self.dataStore.get(url_key)
+        id_key = "reverse-url:{0}".format(new_url)
+        current_short_id = self.dataStore.get(id_key)
+
+        return {
+            'short_id': current_short_id,
+            'url': new_url,
+            'custom_id': current_short_id
+        }
 
     def on_list_urls(self, request):
         urls = []
@@ -95,14 +132,34 @@ class Shortly(object):
         for key in urlkeys:
             urls.append({
                 'short_url': 'http://{0}/{1}'.format(request.host,
-                                              key.split(':')[1]),
+                                                     key.split(':')[1]),
                 'target': self.dataStore.get(key),
             })
-        print(urls)
         return self.render_template('url_list.html', urls=urls)
 
-    def __call__(self, environ, start_response):
-        return self.wsgi_app(environ, start_response)
+
+class ShortlyAPI(APIController, DataManager):
+
+    def __init__(self, config=None, dataStore=None):
+        super(ShortlyAPI, self).__init__(dataStore=dataStore)
+
+        self.url_map = Map([
+            Rule('/', endpoint='new_url'),
+            Rule('/<short_id>', endpoint='follow_short_link'),
+            Rule('/<short_id>+', endpoint='short_link_details'),
+            Rule('/list', endpoint='list_urls')
+        ])
+
+    def list_urls(self, request):
+        urls = []
+        urlkeys = self.dataStore.keys('url-target:*')
+        for key in urlkeys:
+            urls.append({
+                'short_url': 'http://{0}/{1}'.format(request.host,
+                                                     key.split(':')[1]),
+                'target': self.dataStore.get(key),
+            })
+        return self.render(urls=urls)
 
 
 def is_valid_url(url):

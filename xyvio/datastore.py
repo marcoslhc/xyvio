@@ -21,5 +21,8 @@ class RedisDataStore(DataStore):
     def set(self, key, value):
         return self.store.set(key, value)
 
+    def delete(self, key):
+        return self.store.delete(key)
+
     def keys(self, pattern):
         return self.store.keys(pattern)

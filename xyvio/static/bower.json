@@ -14,5 +14,6 @@
   ],
   "dependencies": {
     "normalize-less": "*",
+    "normalize-scss": "~3.0.3"
   }
 }

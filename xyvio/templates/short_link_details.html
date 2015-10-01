@@ -8,4 +8,19 @@
     <dt>Click count:
     <dd>{{ click_count }}
   </dl>
+  <div class="form-edit">
+      <form action="" method="POST">
+          <div class="controls">
+              <div class="control">
+                  <label for="url">URL:</label>
+                  <input type="text" name="url" id="url" placeholder="{{ link_target }}"/>
+              </div>
+              <div class="control">
+                  <label for="custom_id">Custom Slug:</label>
+                  <input type="text" name="custom_id" id="custom_id" placeholder=""/>
+              </div>
+              <div class="control"><input type="submit" value="submit"></div>
+          </div>
+      </form>
+  </div>
 {% endblock %}
